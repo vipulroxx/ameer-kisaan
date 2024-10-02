@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Tab, Tabs, Box, Typography, AppBar, Toolbar } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CropRecommendation from './Components/dashboard/CropRecommendation';
@@ -11,16 +11,16 @@ import GovernmentSchemes from './Components/ecommerce/GovernmentSchemes';
 import Forum from './Components/ecommerce/Forum';
 import InventoryManagement from './Components/ecommerce/InventoryManagement';
 import Profile from './Components/auth/Profile';
-import Settings from './Components/auth/Settings'; // Update the path for Settings
+import Settings from './Components/auth/Settings';
 import { FaCloudSun, FaLeaf, FaSeedling, FaTractor, FaLandmark, FaWarehouse, FaShoppingCart, FaBook } from 'react-icons/fa';
 import logoImage from './Components/farmerapplogo.png';
 
 const theme = createTheme({
   palette: {
-    primary: { main: '#2196F3' }, // Sky Blue
-    secondary: { main: '#8BC34A' }, // Lime Green
-    background: { default: '#F5F5DC' }, // Light Beige
-    text: { primary: '#333333' }, // Dark Charcoal
+    primary: { main: '#2196F3' },
+    secondary: { main: '#8BC34A' },
+    background: { default: '#F5F5DC' },
+    text: { primary: '#333333' },
   },
 });
 
@@ -35,12 +35,13 @@ const Footer = () => (
 );
 
 function App() {
-  const [value, setValue] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
   const [currentTab, setCurrentTab] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleChange = (event, newValue) => {
-    setValue(newValue);
-    setCurrentTab(null); // Reset currentTab when switching to tab
+    setActiveTab(newValue);
+    setCurrentTab(null);
   };
 
   const handleMenuSelect = (menu) => {
@@ -49,62 +50,62 @@ function App() {
     } else if (menu === 'Settings') {
       setCurrentTab('Settings');
     } else if (menu === 'Logout') {
-      // Handle logout logic here
-      console.log('Logout');
+      handleLogout();
     }
   };
+
+  const handleLogout = () => {
+    console.log('User logged out');
+    // Clear user session here
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      // Fetch data logic
+      setIsLoading(false);
+    };
+    fetchData();
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
       <NavigationBar appName="Ameer Kisaan" onMenuSelect={handleMenuSelect} />
-      {/* Absolute positioned logo image */}
-      <Box
-        component="img"
-        src={logoImage}
-        alt="Logo"
-        sx={{
-          position: 'absolute',
-          top: 70,
-          left: 10,
-          width: '120px', // Adjust size as needed
-          height: 'auto',
-          zIndex: 1,
-          border: 'none'
-        }}
-      />
-      {/* Container for the main content */}
+      <Box component="img" src={logoImage} alt="Logo" sx={{ position: 'absolute', top: 70, left: 0, width: '100px', zIndex: 1 }} />
       <Container style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '64px' }}>
         <Box position="relative" style={{ flex: 1 }}>
-          <Box display="flex" justifyContent="center" mb={3}>
-            <Tabs value={value} onChange={handleChange} variant="scrollable" scrollButtons="auto">
-              <Tab label={<><FaCloudSun style={{ marginRight: 5 }} /> Weather</>} />
-              <Tab label={<><FaLeaf style={{ marginRight: 5 }} /> Crops</>} />
-              <Tab label={<><FaSeedling style={{ marginRight: 5 }} /> Recommendations</>} />
-              <Tab label={<><FaTractor style={{ marginRight: 5 }} /> Pests</>} />
-              <Tab label={<><FaLandmark style={{ marginRight: 5 }} /> Schemes</>} />
-              <Tab label={<><FaWarehouse style={{ marginRight: 5 }} /> Inventory</>} />
-              <Tab label={<><FaShoppingCart style={{ marginRight: 5 }} /> Market</>} />
-              <Tab label={<><FaBook style={{ marginRight: 5 }} /> Community Forum</>} />
-            </Tabs>
-          </Box>
-
-          {/* Main Content */}
-          <Box>
-            {currentTab === 'Profile' && <Profile />}
-            {currentTab === 'Settings' && <Settings />}
-            {value === 0 && !currentTab && <WeatherCard />}
-            {value === 1 && !currentTab && <CropSelection />}
-            {value === 2 && !currentTab && <CropRecommendation soilType="Loam" landSize="2 acres" />}
-            {value === 3 && !currentTab && <PestDetection />}
-            {value === 4 && !currentTab && <GovernmentSchemes />}
-            {value === 5 && !currentTab && <InventoryManagement />}
-            {value === 6 && !currentTab && <MarketPrices />}
-            {value === 7 && !currentTab && <Forum />}
-          </Box>
+          {isLoading ? (
+            <Typography>Loading...</Typography>
+          ) : (
+            <>
+              <Box display="flex" justifyContent="center" mb={3}>
+                <Tabs value={activeTab} onChange={handleChange} variant="scrollable" scrollButtons="auto">
+                  <Tab label={<><FaCloudSun /> Weather</>} />
+                  <Tab label={<><FaLeaf /> Crops</>} />
+                  <Tab label={<><FaSeedling /> Recommendations</>} />
+                  <Tab label={<><FaTractor /> Pests</>} />
+                  <Tab label={<><FaLandmark /> Schemes</>} />
+                  <Tab label={<><FaWarehouse /> Inventory</>} />
+                  <Tab label={<><FaShoppingCart /> Market</>} />
+                  <Tab label={<><FaBook /> Community Forum</>} />
+                </Tabs>
+              </Box>
+              <Box>
+                {currentTab === 'Profile' && <Profile />}
+                {currentTab === 'Settings' && <Settings />}
+                {activeTab === 0 && !currentTab && <WeatherCard />}
+                {activeTab === 1 && !currentTab && <CropSelection />}
+                {activeTab === 2 && !currentTab && <CropRecommendation soilType="Loam" landSize="2 acres" />}
+                {activeTab === 3 && !currentTab && <PestDetection />}
+                {activeTab === 4 && !currentTab && <GovernmentSchemes />}
+                {activeTab === 5 && !currentTab && <InventoryManagement />}
+                {activeTab === 6 && !currentTab && <MarketPrices />}
+                {activeTab === 7 && !currentTab && <Forum />}
+              </Box>
+            </>
+          )}
         </Box>
       </Container>
-
-      {/* Footer */}
       <Footer />
     </ThemeProvider>
   );
