@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Container, Tab, Tabs, Box, Typography, AppBar, Toolbar } from '@mui/material';
+import { Container, Box, Typography, AppBar, Toolbar, Button, Tabs, Tab } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { FaCloudSun, FaLeaf, FaSeedling, FaTractor, FaLandmark, FaWarehouse, FaShoppingCart, FaBook } from 'react-icons/fa';
 import CropRecommendation from './Components/dashboard/CropRecommendation';
 import CropSelection from './Components/dashboard/CropSelection';
 import NavigationBar from './Components/dashboard/NavigationBar';
@@ -11,21 +12,22 @@ import GovernmentSchemes from './Components/ecommerce/GovernmentSchemes';
 import Forum from './Components/ecommerce/Forum';
 import InventoryManagement from './Components/ecommerce/InventoryManagement';
 import Profile from './Components/auth/Profile';
-import Settings from './Components/auth/Settings'; // Update the path for Settings
-import { FaCloudSun, FaLeaf, FaSeedling, FaTractor, FaLandmark, FaWarehouse, FaShoppingCart, FaBook } from 'react-icons/fa';
-import logoImage from './Components/farmerapplogo.png';
+import Settings from './Components/auth/Settings';
+import Registration from './Components/auth/Registration';
+import Login from './Components/auth/Login';
+import './App.css';
 
 const theme = createTheme({
   palette: {
-    primary: { main: '#2196F3' }, // Sky Blue
-    secondary: { main: '#8BC34A' }, // Lime Green
-    background: { default: '#F5F5DC' }, // Light Beige
-    text: { primary: '#333333' }, // Dark Charcoal
+    primary: { main: '#2196F3' },
+    secondary: { main: '#8BC34A' },
+    background: { default: '#F5F5DC' },
+    text: { primary: '#333333' },
   },
 });
 
 const Footer = () => (
-  <AppBar position="fixed" style={{ top: 'auto', bottom: 0, backgroundColor: theme.palette.primary.main }}>
+  <AppBar position="fixed" className='app-bar' style={{ top: 'auto', bottom: 0, backgroundColor: theme.palette.primary.main }}>
     <Toolbar>
       <Typography variant="body1" color="inherit" style={{ flexGrow: 1, textAlign: 'center' }}>
         Ameer Kisaan © {new Date().getFullYear()}. All Rights Reserved.
@@ -35,76 +37,118 @@ const Footer = () => (
 );
 
 function App() {
-  const [value, setValue] = useState(0);
-  const [currentTab, setCurrentTab] = useState(null);
+  const [currentTab, setCurrentTab] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userDetails, setUserDetails] = useState(null);
+  const [currentForm, setCurrentForm] = useState('login');
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-    setCurrentTab(null); // Reset currentTab when switching to tab
+  const handleTabChange = (event, newValue) => {
+    setCurrentTab(newValue);
   };
 
   const handleMenuSelect = (menu) => {
     if (menu === 'Profile') {
-      setCurrentTab('Profile');
+      setCurrentTab(8); // Assuming Profile tab index is 8
     } else if (menu === 'Settings') {
-      setCurrentTab('Settings');
+      setCurrentTab(9); // Assuming Settings tab index is 9
     } else if (menu === 'Logout') {
-      // Handle logout logic here
-      console.log('Logout');
+      handleLogout();
     }
+  };
+
+  const handleRegister = async (userData) => {
+    setLoading(true);
+    try {
+      console.log("Registered User Data: ", userData);
+      setUserDetails(userData);
+      setIsAuthenticated(true);
+      setCurrentForm('login');
+    } catch (error) {
+      console.error('Registration failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = async (credentials) => {
+    setLoading(true);
+    try {
+      console.log('Logged in with:', credentials);
+      setIsAuthenticated(true);
+      setUserDetails(credentials);
+    } catch (error) {
+      console.error('Login failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUserDetails(null);
+    setCurrentTab(0); // Reset to first tab on logout
+  };
+
+  const toggleForm = () => {
+    setCurrentForm(prevForm => (prevForm === 'register' ? 'login' : 'register'));
   };
 
   return (
     <ThemeProvider theme={theme}>
-      <NavigationBar appName="Ameer Kisaan" onMenuSelect={handleMenuSelect} />
-      {/* Absolute positioned logo image */}
-      <Box
-        component="img"
-        src={logoImage}
-        alt="Logo"
-        sx={{
-          position: 'absolute',
-          top: 70,
-          left: 10,
-          width: '120px', // Adjust size as needed
-          height: 'auto',
-          zIndex: 1,
-          border: 'none'
-        }}
+      <NavigationBar 
+        appName="Ameer Kisaan" 
+        onMenuSelect={handleMenuSelect} 
+        onHomeClick={() => setCurrentTab(0)} 
+        isAuthenticated={isAuthenticated} 
       />
-      {/* Container for the main content */}
-      <Container style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '64px' }}>
-        <Box position="relative" style={{ flex: 1 }}>
-          <Box display="flex" justifyContent="center" mb={3}>
-            <Tabs value={value} onChange={handleChange} variant="scrollable" scrollButtons="auto">
-              <Tab label={<><FaCloudSun style={{ marginRight: 5 }} /> Weather</>} />
-              <Tab label={<><FaLeaf style={{ marginRight: 5 }} /> Crops</>} />
-              <Tab label={<><FaSeedling style={{ marginRight: 5 }} /> Recommendations</>} />
-              <Tab label={<><FaTractor style={{ marginRight: 5 }} /> Pests</>} />
-              <Tab label={<><FaLandmark style={{ marginRight: 5 }} /> Schemes</>} />
-              <Tab label={<><FaWarehouse style={{ marginRight: 5 }} /> Inventory</>} />
-              <Tab label={<><FaShoppingCart style={{ marginRight: 5 }} /> Market</>} />
-              <Tab label={<><FaBook style={{ marginRight: 5 }} /> Community Forum</>} />
-            </Tabs>
-          </Box>
-
-          {/* Main Content */}
-          <Box>
-            {currentTab === 'Profile' && <Profile />}
-            {currentTab === 'Settings' && <Settings />}
-            {value === 0 && !currentTab && <WeatherCard />}
-            {value === 1 && !currentTab && <CropSelection />}
-            {value === 2 && !currentTab && <CropRecommendation soilType="Loam" landSize="2 acres" />}
-            {value === 3 && !currentTab && <PestDetection />}
-            {value === 4 && !currentTab && <GovernmentSchemes />}
-            {value === 5 && !currentTab && <InventoryManagement />}
-            {value === 6 && !currentTab && <MarketPrices />}
-            {value === 7 && !currentTab && <Forum />}
-          </Box>
+      <Container className="main-container">
+        <Box position="relative" className="content-box">
+          {isAuthenticated ? (
+            <Box>
+              <Box display="flex" justifyContent="center" mb={3}>
+                <Tabs value={currentTab} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
+                  <Tab label={<><FaCloudSun className="icon" /> Weather</>} />
+                  <Tab label={<><FaLeaf className="icon" /> Crops</>} />
+                  <Tab label={<><FaSeedling className="icon" /> Recommendations</>} />
+                  <Tab label={<><FaTractor className="icon" /> Pests</>} />
+                  <Tab label={<><FaLandmark className="icon" /> Schemes</>} />
+                  <Tab label={<><FaWarehouse className="icon" /> Inventory</>} />
+                  <Tab label={<><FaShoppingCart className="icon" /> Market</>} />
+                  <Tab label={<><FaBook className="icon" /> Community Forum</>} />
+                  <Tab label="Profile" />
+                  <Tab label="Settings" />
+                </Tabs>
+              </Box>
+              <Box>
+                {currentTab === 0 && <WeatherCard />}
+                {currentTab === 1 && <CropSelection />}
+                {currentTab === 2 && <CropRecommendation soilType="Loam" landSize="2 acres" />}
+                {currentTab === 3 && <PestDetection />}
+                {currentTab === 4 && <GovernmentSchemes />}
+                {currentTab === 5 && <InventoryManagement />}
+                {currentTab === 6 && <MarketPrices />}
+                {currentTab === 7 && <Forum />}
+                {currentTab === 8 && <Profile userDetails={userDetails} />}
+                {currentTab === 9 && <Settings />}
+              </Box>
+            </Box>
+          ) : (
+            <Box>
+              {loading ? (
+                <Typography>Loading...</Typography>
+              ) : currentForm === 'register' ? (
+                <Registration onRegister={handleRegister} />
+              ) : (
+                <Login onLogin={handleLogin} />
+              )}
+              <Button variant="outlined" onClick={toggleForm} style={{ marginTop: '16px' }}>
+                {currentForm === 'register' ? 'Already have an account? Login' : 'Need an account? Register'}
+              </Button>
+            </Box>
+          )}
         </Box>
       </Container>
-
-      {/* Footer */}
       <Footer />
     </ThemeProvider>
   );
