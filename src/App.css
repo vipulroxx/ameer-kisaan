@@ -1,7 +1,7 @@
 .logo {
   position: absolute;
   top: 70px; /* Keep this for vertical positioning */
-  left:4%; /* Center it horizontally */
+  left: 4%; /* Center it horizontally */
   transform: translateX(-50%); /* Adjust position to be truly centered */
   width: 120px; /* Adjust size as needed */
   height: auto;
@@ -20,6 +20,27 @@
 
 .content-box {
   flex: 1;
+  opacity: 0.5; /* Default opacity */
+  transition: opacity 0.3s; /* Smooth transition */
+}
+
+.tab {
+  transition: transform 0.3s, opacity 0.3s; /* Smooth transition for transform and opacity */
+  opacity: 0.5; /* Default opacity */
+}
+
+.tab.hovered {
+  transform: scale(1.1); /* Scale up the hovered tab */
+  opacity: 1; /* Full opacity on hover */
+}
+
+.tab:not(.hovered) {
+  opacity: 0.5; /* Fade out other tabs */
+}
+
+
+.content-box:hover {
+  opacity: 1; /* Full opacity on hover */
 }
 
 .icon {
