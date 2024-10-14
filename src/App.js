@@ -38,6 +38,7 @@ const Footer = () => (
 
 function App() {
   const [currentTab, setCurrentTab] = useState(0);
+  const [hoveredTab, setHoveredTab] = useState(null); // State for hovered tab
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
   const [currentForm, setCurrentForm] = useState('login');
@@ -47,11 +48,19 @@ function App() {
     setCurrentTab(newValue);
   };
 
+  const handleMouseEnter = (index) => {
+    setHoveredTab(index);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredTab(null);
+  };
+
   const handleMenuSelect = (menu) => {
     if (menu === 'Profile') {
-      setCurrentTab(8); // Assuming Profile tab index is 8
+      setCurrentTab(8); // Profile tab index
     } else if (menu === 'Settings') {
-      setCurrentTab(9); // Assuming Settings tab index is 9
+      setCurrentTab(9); // Settings tab index
     } else if (menu === 'Logout') {
       handleLogout();
     }
@@ -108,16 +117,54 @@ function App() {
             <Box>
               <Box display="flex" justifyContent="center" mb={3}>
                 <Tabs value={currentTab} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
-                  <Tab label={<><FaCloudSun className="icon" /> Weather</>} />
-                  <Tab label={<><FaLeaf className="icon" /> Crops</>} />
-                  <Tab label={<><FaSeedling className="icon" /> Recommendations</>} />
-                  <Tab label={<><FaTractor className="icon" /> Pests</>} />
-                  <Tab label={<><FaLandmark className="icon" /> Schemes</>} />
-                  <Tab label={<><FaWarehouse className="icon" /> Inventory</>} />
-                  <Tab label={<><FaShoppingCart className="icon" /> Market</>} />
-                  <Tab label={<><FaBook className="icon" /> Community Forum</>} />
-                  <Tab label="Profile" />
-                  <Tab label="Settings" />
+                  <Tab 
+                    label={<><FaCloudSun className="icon" /> Weather</>} 
+                    className={`tab ${hoveredTab === 0 ? 'hovered' : ''}`} 
+                    onMouseEnter={() => handleMouseEnter(0)}
+                    onMouseLeave={handleMouseLeave}
+                  />
+                  <Tab 
+                    label={<><FaLeaf className="icon" /> Crops</>} 
+                    className={`tab ${hoveredTab === 1 ? 'hovered' : ''}`} 
+                    onMouseEnter={() => handleMouseEnter(1)}
+                    onMouseLeave={handleMouseLeave}
+                  />
+                  <Tab 
+                    label={<><FaSeedling className="icon" /> Recommendations</>} 
+                    className={`tab ${hoveredTab === 2 ? 'hovered' : ''}`} 
+                    onMouseEnter={() => handleMouseEnter(2)}
+                    onMouseLeave={handleMouseLeave}
+                  />
+                  <Tab 
+                    label={<><FaTractor className="icon" /> Pests</>} 
+                    className={`tab ${hoveredTab === 3 ? 'hovered' : ''}`} 
+                    onMouseEnter={() => handleMouseEnter(3)}
+                    onMouseLeave={handleMouseLeave}
+                  />
+                  <Tab 
+                    label={<><FaLandmark className="icon" /> Schemes</>} 
+                    className={`tab ${hoveredTab === 4 ? 'hovered' : ''}`} 
+                    onMouseEnter={() => handleMouseEnter(4)}
+                    onMouseLeave={handleMouseLeave}
+                  />
+                  <Tab 
+                    label={<><FaWarehouse className="icon" /> Inventory</>} 
+                    className={`tab ${hoveredTab === 5 ? 'hovered' : ''}`} 
+                    onMouseEnter={() => handleMouseEnter(5)}
+                    onMouseLeave={handleMouseLeave}
+                  />
+                  <Tab 
+                    label={<><FaShoppingCart className="icon" /> Market</>} 
+                    className={`tab ${hoveredTab === 6 ? 'hovered' : ''}`} 
+                    onMouseEnter={() => handleMouseEnter(6)}
+                    onMouseLeave={handleMouseLeave}
+                  />
+                  <Tab 
+                    label={<><FaBook className="icon" /> Community Forum</>} 
+                    className={`tab ${hoveredTab === 7 ? 'hovered' : ''}`} 
+                    onMouseEnter={() => handleMouseEnter(7)}
+                    onMouseLeave={handleMouseLeave}
+                  />
                 </Tabs>
               </Box>
               <Box>
