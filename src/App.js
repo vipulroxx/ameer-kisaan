@@ -16,7 +16,6 @@ import Settings from './Components/auth/Settings';
 import Registration from './Components/auth/Registration';
 import Login from './Components/auth/Login';
 import './App.css';
-
 const theme = createTheme({
   palette: {
     primary: { main: '#2196F3' },
@@ -189,12 +188,10 @@ function App() {
               ) : (
                 <Login onLogin={handleLogin} />
               )}
-              <Button variant="outlined" onClick={toggleForm} style={{ marginTop: '16px' }}>
-                {currentForm === 'register' ? 'Already have an account? Login' : 'Need an account? Register'}
-              </Button>
             </Box>
           )}
         </Box>
+        
       </Container>
       <Footer />
     </ThemeProvider>
