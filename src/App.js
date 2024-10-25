@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { Container, Box, Typography, AppBar, Toolbar, Button, Tabs, Tab } from '@mui/material';
+import { Container, Box, Typography, AppBar, Toolbar, Tabs, Tab } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { FaCloudSun, FaLeaf, FaSeedling, FaTractor, FaLandmark, FaWarehouse, FaShoppingCart, FaBook } from 'react-icons/fa';
+import { FaCloudSun, FaLeaf, FaSeedling, FaBug, FaLandmark, FaWarehouse, FaShoppingCart, FaBook } from 'react-icons/fa';
 import CropRecommendation from './Components/dashboard/CropRecommendation';
 import CropSelection from './Components/dashboard/CropSelection';
 import NavigationBar from './Components/dashboard/NavigationBar';
 import WeatherCard from './Components/dashboard/WeatherCard';
 import MarketPrices from './Components/ecommerce/MarketPrices';
-import PestDetection from './Components/risk_management/PestDetection';
 import GovernmentSchemes from './Components/ecommerce/GovernmentSchemes';
 import Forum from './Components/ecommerce/Forum';
 import InventoryManagement from './Components/ecommerce/InventoryManagement';
@@ -15,7 +14,10 @@ import Profile from './Components/auth/Profile';
 import Settings from './Components/auth/Settings';
 import Registration from './Components/auth/Registration';
 import Login from './Components/auth/Login';
+import RiskClassification from './Components/risk_management/RiskClassification';
+
 import './App.css';
+
 const theme = createTheme({
   palette: {
     primary: { main: '#2196F3' },
@@ -37,7 +39,7 @@ const Footer = () => (
 
 function App() {
   const [currentTab, setCurrentTab] = useState(0);
-  const [hoveredTab, setHoveredTab] = useState(null); // State for hovered tab
+  const [hoveredTab, setHoveredTab] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
   const [currentForm, setCurrentForm] = useState('login');
@@ -57,9 +59,9 @@ function App() {
 
   const handleMenuSelect = (menu) => {
     if (menu === 'Profile') {
-      setCurrentTab(8); // Profile tab index
+      setCurrentTab(8);
     } else if (menu === 'Settings') {
-      setCurrentTab(9); // Settings tab index
+      setCurrentTab(9);
     } else if (menu === 'Logout') {
       handleLogout();
     }
@@ -95,7 +97,7 @@ function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setUserDetails(null);
-    setCurrentTab(0); // Reset to first tab on logout
+    setCurrentTab(0);
   };
 
   const toggleForm = () => {
@@ -135,7 +137,7 @@ function App() {
                     onMouseLeave={handleMouseLeave}
                   />
                   <Tab 
-                    label={<><FaTractor className="icon" /> Pests</>} 
+                    label={<><FaBug className="icon" /> Issues</>} 
                     className={`tab ${hoveredTab === 3 ? 'hovered' : ''}`} 
                     onMouseEnter={() => handleMouseEnter(3)}
                     onMouseLeave={handleMouseLeave}
@@ -170,7 +172,7 @@ function App() {
                 {currentTab === 0 && <WeatherCard />}
                 {currentTab === 1 && <CropSelection />}
                 {currentTab === 2 && <CropRecommendation soilType="Loam" landSize="2 acres" />}
-                {currentTab === 3 && <PestDetection />}
+                {currentTab === 3 && <RiskClassification />} {/* Render RiskClassification here */}
                 {currentTab === 4 && <GovernmentSchemes />}
                 {currentTab === 5 && <InventoryManagement />}
                 {currentTab === 6 && <MarketPrices />}
@@ -191,8 +193,8 @@ function App() {
             </Box>
           )}
         </Box>
-        
       </Container>
+      
       <Footer />
     </ThemeProvider>
   );
