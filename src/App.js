@@ -15,7 +15,6 @@ import Settings from './Components/auth/Settings';
 import Registration from './Components/auth/Registration';
 import Login from './Components/auth/Login';
 import RiskClassification from './Components/risk_management/RiskClassification';
-
 import './App.css';
 
 const theme = createTheme({
@@ -155,13 +154,7 @@ function App() {
                     onMouseLeave={handleMouseLeave}
                   />
                   <Tab 
-                    label={<><FaShoppingCart className="icon" /> Market</>} 
-                    className={`tab ${hoveredTab === 6 ? 'hovered' : ''}`} 
-                    onMouseEnter={() => handleMouseEnter(6)}
-                    onMouseLeave={handleMouseLeave}
-                  />
-                  <Tab 
-                    label={<><FaBook className="icon" /> Community Forum</>} 
+                    label={<><FaShoppingCart className="icon" /> Community Market</>} 
                     className={`tab ${hoveredTab === 7 ? 'hovered' : ''}`} 
                     onMouseEnter={() => handleMouseEnter(7)}
                     onMouseLeave={handleMouseLeave}
@@ -175,10 +168,9 @@ function App() {
                 {currentTab === 3 && <RiskClassification />} {/* Render RiskClassification here */}
                 {currentTab === 4 && <GovernmentSchemes />}
                 {currentTab === 5 && <InventoryManagement />}
-                {currentTab === 6 && <MarketPrices />}
-                {currentTab === 7 && <Forum />}
-                {currentTab === 8 && <Profile userDetails={userDetails} />}
-                {currentTab === 9 && <Settings />}
+                {currentTab === 6 && <Forum />}
+                {currentTab === 7 && <Profile userDetails={userDetails} />}
+                {currentTab === 8 && <Settings />}
               </Box>
             </Box>
           ) : (
