@@ -43,6 +43,8 @@ function App() {
   const [userDetails, setUserDetails] = useState(null);
   const [currentForm, setCurrentForm] = useState('login');
   const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [registerError, setRegisterError] = useState('');
 
   const handleTabChange = (event, newValue) => {
     setCurrentTab(newValue);
@@ -58,35 +60,67 @@ function App() {
 
   const handleMenuSelect = (menu) => {
     if (menu === 'Profile') {
-      setCurrentTab(8);
+      setCurrentTab(7);
     } else if (menu === 'Settings') {
-      setCurrentTab(9);
+      setCurrentTab(8);
     } else if (menu === 'Logout') {
       handleLogout();
     }
   };
 
+  // Save user to localStorage (keyed by email)
   const handleRegister = async (userData) => {
     setLoading(true);
+    setRegisterError('');
     try {
-      console.log("Registered User Data: ", userData);
-      setUserDetails(userData);
-      setIsAuthenticated(true);
+      // Normalize email and password
+      const normalizedEmail = userData.email.trim().toLowerCase();
+      const normalizedPassword = userData.password.trim();
+      const userWithType = {
+        ...userData,
+        email: normalizedEmail,
+        password: normalizedPassword,
+        userType: userData.userType || 'Farmer',
+      };
+      // Check if user already exists
+      const users = JSON.parse(localStorage.getItem('users') || '{}');
+      if (users[normalizedEmail]) {
+        setRegisterError('User with this email already exists.');
+        setLoading(false);
+        return;
+      }
+      users[normalizedEmail] = userWithType;
+      localStorage.setItem('users', JSON.stringify(users));
       setCurrentForm('login');
     } catch (error) {
+      setRegisterError('Registration failed.');
       console.error('Registration failed:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  // Validate login against localStorage
   const handleLogin = async (credentials) => {
     setLoading(true);
+    setLoginError('');
     try {
-      console.log('Logged in with:', credentials);
-      setIsAuthenticated(true);
-      setUserDetails(credentials);
+      // Normalize email and password
+      const normalizedEmail = credentials.email.trim().toLowerCase();
+      const normalizedPassword = credentials.password.trim();
+      const users = JSON.parse(localStorage.getItem('users') || '{}');
+      const user = users[normalizedEmail];
+      if (user && user.password === normalizedPassword) {
+        setIsAuthenticated(true);
+        setUserDetails(user);
+        setLoginError('');
+      } else {
+        setLoginError('Invalid email or password.');
+        setIsAuthenticated(false);
+      }
     } catch (error) {
+      setLoginError('Login failed.');
+      setIsAuthenticated(false);
       console.error('Login failed:', error);
     } finally {
       setLoading(false);
@@ -99,8 +133,11 @@ function App() {
     setCurrentTab(0);
   };
 
+  // Toggle between login and register forms
   const toggleForm = () => {
     setCurrentForm(prevForm => (prevForm === 'register' ? 'login' : 'register'));
+    setLoginError('');
+    setRegisterError('');
   };
 
   return (
@@ -165,7 +202,7 @@ function App() {
                 {currentTab === 0 && <WeatherCard />}
                 {currentTab === 1 && <CropSelection />}
                 {currentTab === 2 && <CropRecommendation soilType="Loam" landSize="2 acres" />}
-                {currentTab === 3 && <RiskClassification />} {/* Render RiskClassification here */}
+                {currentTab === 3 && <RiskClassification />}
                 {currentTab === 4 && <GovernmentSchemes />}
                 {currentTab === 5 && <InventoryManagement />}
                 {currentTab === 6 && <Forum />}
@@ -178,15 +215,14 @@ function App() {
               {loading ? (
                 <Typography>Loading...</Typography>
               ) : currentForm === 'register' ? (
-                <Registration onRegister={handleRegister} />
+                <Registration onRegister={handleRegister} error={registerError} toggleForm={toggleForm} />
               ) : (
-                <Login onLogin={handleLogin} />
+                <Login onLogin={handleLogin} error={loginError} toggleForm={toggleForm} />
               )}
             </Box>
           )}
         </Box>
       </Container>
-      
       <Footer />
     </ThemeProvider>
   );
