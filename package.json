@@ -27,6 +27,7 @@
     "chart.js": "^4.4.4",
     "firebase": "^11.8.1",
     "framer-motion": "^11.11.8",
+    "gh-pages": "^6.3.0",
     "i18next": "^23.15.1",
     "leaflet": "^1.9.4",
     "papaparse": "^5.4.1",
@@ -55,7 +56,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
