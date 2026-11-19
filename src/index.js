@@ -14,7 +14,8 @@ root.render(
   rel="stylesheet"
   href="https://unpkg.com/leaflet/dist/leaflet.css"
 />
-  <BrowserRouter>
+  {/* basename lets the app run under a sub-path, e.g. GitHub Pages' /ameer-kisaan */}
+  <BrowserRouter basename={process.env.PUBLIC_URL}>
     <App />
   </BrowserRouter>  
   </React.StrictMode>
