@@ -91,7 +91,10 @@ jobs:
           docker build -f Dockerfile.render -t ameer-kisaan-render:ci .
       - name: Scan images for HIGH/CRITICAL vulnerabilities
         run: |
+          failed=0
           for img in backend frontend render; do
             docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest \
-              image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --no-progress ameer-kisaan-$img:ci
+              image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --no-progress ameer-kisaan-$img:ci \
+              || failed=1
           done
+          exit $failed
