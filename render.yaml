@@ -49,7 +49,7 @@ services:
       - key: OPENAI_BASE_URL
         value: https://api.groq.com/openai/v1
       - key: OPENAI_MODEL
-        sync: false
+        value: qwen/qwen3.8-27b       # chosen by testing English/Hindi answers on the real pipeline
       - key: OPENAI_API_KEY
         sync: false
       - key: EMBEDDINGS_PROVIDER
@@ -60,3 +60,6 @@ services:
         value: gemini-embedding-001
       - key: OPENAI_EMBED_API_KEY
         sync: false
+      # Gemini embedding distances: farming questions <= 0.35, off-topic >= 0.41 (measured).
+      - key: RAG_MAX_DISTANCE
+        value: "0.38"
