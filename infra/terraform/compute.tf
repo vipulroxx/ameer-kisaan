@@ -14,7 +14,7 @@ resource "aws_ecr_repository" "r" {
 resource "aws_ecr_lifecycle_policy" "r" {
   for_each   = aws_ecr_repository.r
   repository = each.value.name
-  policy     = jsonencode({
+  policy = jsonencode({
     rules = [{
       rulePriority = 1
       description  = "Keep the last 20 images"
@@ -148,7 +148,7 @@ resource "aws_ecs_task_definition" "backend" {
     mountPoints            = [{ sourceVolume = "tmp", containerPath = "/tmp" }]
     linuxParameters        = { capabilities = { drop = ["ALL"] }, initProcessEnabled = true }
     logConfiguration       = local.log_config["backend"]
-    environment            = [
+    environment = [
       { name = "APP_ENV", value = var.environment == "prod" ? "prod" : "staging" },
       { name = "AWS_REGION", value = var.region },
       { name = "TABLE_PREFIX", value = local.table_prefix },
@@ -188,7 +188,7 @@ resource "aws_ecs_task_definition" "frontend" {
     essential              = true
     readonlyRootFilesystem = true
     portMappings           = [{ containerPort = 8080, protocol = "tcp" }]
-    mountPoints            = [
+    mountPoints = [
       { sourceVolume = "tmp", containerPath = "/tmp" },
       { sourceVolume = "nginx-conf", containerPath = "/etc/nginx/conf.d" },
     ]

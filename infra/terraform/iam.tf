@@ -28,9 +28,9 @@ resource "aws_iam_role_policy_attachment" "execution" {
 }
 
 resource "aws_iam_role_policy" "execution_secrets" {
-  role   = aws_iam_role.execution.id
+  role = aws_iam_role.execution.id
   policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [
       {
         Effect   = "Allow"
@@ -58,9 +58,9 @@ locals {
 }
 
 resource "aws_iam_role_policy" "backend" {
-  role   = aws_iam_role.backend.id
+  role = aws_iam_role.backend.id
   policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [
       {
         Sid    = "AppTables"
@@ -109,10 +109,10 @@ resource "aws_iam_openid_connect_provider" "github" {
 }
 
 resource "aws_iam_role" "deploy" {
-  count              = var.github_repository == "" ? 0 : 1
-  name               = "${local.name}-github-deploy"
+  count = var.github_repository == "" ? 0 : 1
+  name  = "${local.name}-github-deploy"
   assume_role_policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [{
       Effect    = "Allow"
       Principal = { Federated = aws_iam_openid_connect_provider.github[0].arn }
@@ -127,10 +127,10 @@ resource "aws_iam_role" "deploy" {
 }
 
 resource "aws_iam_role_policy" "deploy" {
-  count  = var.github_repository == "" ? 0 : 1
-  role   = aws_iam_role.deploy[0].id
+  count = var.github_repository == "" ? 0 : 1
+  role  = aws_iam_role.deploy[0].id
   policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [
       { Effect = "Allow", Action = ["ecr:GetAuthorizationToken"], Resource = "*" },
       {

@@ -3,8 +3,8 @@ resource "aws_kms_key" "main" {
   description             = "${local.name} data encryption"
   enable_key_rotation     = true
   deletion_window_in_days = 30
-  policy                  = jsonencode({
-    Version   = "2012-10-17"
+  policy = jsonencode({
+    Version = "2012-10-17"
     Statement = [
       {
         Sid       = "AccountAdmin"
@@ -37,7 +37,7 @@ locals {
     users     = { hash = "pk", range = null, attrs = { pk = "S" }, gsis = [], ttl = null }
     sessions  = { hash = "pk", range = null, attrs = { pk = "S" }, gsis = [], ttl = "expires_at" }
     inventory = { hash = "owner_id", range = "item_id", attrs = { owner_id = "S", item_id = "S" }, gsis = [], ttl = null }
-    forum     = {
+    forum = {
       hash = "pk", range = "sk", attrs = { pk = "S", sk = "S", feed = "S", created_at = "S" }, ttl = null
       gsis = [{ name = "feed-index", hash = "feed", range = "created_at" }]
     }
@@ -143,7 +143,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "uploads" {
 resource "aws_s3_bucket_policy" "uploads_tls_only" {
   bucket = aws_s3_bucket.uploads.id
   policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [{
       Sid       = "DenyInsecureTransport"
       Effect    = "Deny"
