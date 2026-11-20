@@ -21,7 +21,9 @@ root.render(
   </React.StrictMode>
 );
 
-// Register service worker
-serviceWorkerRegistration.register();
+// The build ships no service worker (there is no src/service-worker.js), so
+// registering one only fails. Unregister instead, which also removes any
+// worker an older deploy left behind in a visitor's browser.
+serviceWorkerRegistration.unregister();
 
 reportWebVitals();

@@ -40,6 +40,12 @@ The AWS stack in `infra/terraform` is still available for paid, highly available
 3. Create the private bucket `ameer-kisaan-uploads` in Supabase Storage.
 4. Every push to `main` redeploys automatically.
 
+## Client IP behind Render
+
+Rate limits and audit logs need the visitor's real IP. On Render, Cloudflare sets `CF-Connecting-IP` and rejects
+requests that try to forge it, while `X-Forwarded-For` keeps whatever the client sent. So production uses
+`CLIENT_IP_HEADER=cf-connecting-ip`. This was verified by sending forged headers to the live service.
+
 ## Limits to know
 
 - One small instance (less than 1 CPU, 512 MB). Fine for a launch, but slows down under heavy concurrent use.

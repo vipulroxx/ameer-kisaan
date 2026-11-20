@@ -26,8 +26,12 @@ services:
         sync: false
       - key: CORS_ORIGINS
         value: https://ameer-kisaan.onrender.com
+      # Client IP for rate limits/audit. Verified on Render: Cloudflare sets CF-Connecting-IP and
+      # rejects requests that try to set it; X-Forwarded-For is appended to, so it is spoofable.
+      - key: CLIENT_IP_HEADER
+        value: cf-connecting-ip
       - key: TRUSTED_PROXY_HOPS
-        value: "1"
+        value: "2"
       # --- Supabase: Postgres (session pooler URL) and Storage (S3 protocol) ---
       - key: DATABASE_URL
         sync: false
