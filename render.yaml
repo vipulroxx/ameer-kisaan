@@ -1,0 +1,62 @@
+# Free production hosting on Render (Blueprint). One web service runs the API and
+# serves the React app on the same origin. Everything here is free tier and needs
+# no payment card: Render (web), Supabase (Postgres + S3-compatible storage),
+# Groq (chat model) and Google AI Studio (embeddings). See DEPLOY.md.
+services:
+  - type: web
+    name: ameer-kisaan
+    runtime: docker
+    plan: free
+    region: singapore            # closest Render region to India
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: LOG_LEVEL
+        value: INFO
+      # Generated once by Render. FIELD_ENCRYPTION_KEY encrypts Aadhaar/PAN numbers:
+      # never change it, or stored numbers can no longer be decrypted.
+      - key: JWT_SECRET
+        generateValue: true
+      # Standard base64 of 32 random bytes:  python3 -c "import os,base64;print(base64.b64encode(os.urandom(32)).decode())"
+      - key: FIELD_ENCRYPTION_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://ameer-kisaan.onrender.com
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"
+      # --- Supabase: Postgres (session pooler URL) and Storage (S3 protocol) ---
+      - key: DATABASE_URL
+        sync: false
+      - key: S3_ENDPOINT_URL
+        sync: false
+      - key: AWS_REGION
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_BUCKET
+        value: ameer-kisaan-uploads
+      - key: PHOTO_URL_MODE
+        value: proxy
+      # --- Kisaan AI: Groq for answers, Gemini for search embeddings ---
+      - key: LLM_PROVIDER
+        value: openai
+      - key: OPENAI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: OPENAI_MODEL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: EMBEDDINGS_PROVIDER
+        value: openai
+      - key: OPENAI_EMBED_BASE_URL
+        value: https://generativelanguage.googleapis.com/v1beta/openai
+      - key: OPENAI_EMBED_MODEL
+        value: gemini-embedding-001
+      - key: OPENAI_EMBED_API_KEY
+        sync: false

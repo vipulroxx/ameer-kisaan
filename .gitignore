@@ -22,3 +22,15 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# secrets & local state
+.env
+*.tfvars
+!*.tfvars.example
+.terraform/
+*.tfstate
+*.tfstate.*
+src/Backend/models/*.tflite
+
+# Firebase CLI
+firebase-debug.log

@@ -1,0 +1,43 @@
+# syntax=docker/dockerfile:1.7
+# Single-service image for free hosting (Render): the FastAPI API also serves
+# the built React app, so browser and API share one origin and the strict
+# same-site refresh cookie keeps working. Data lives in Postgres (Supabase)
+# and photos in any S3-compatible bucket (Supabase Storage); see DEPLOY.md.
+
+# --- 1. Web app --------------------------------------------------------------
+FROM node:22-alpine AS web
+WORKDIR /web
+COPY package.json package-lock.json ./
+# --legacy-peer-deps: existing peer conflict (react-swipeable-views declares React <= 17)
+RUN npm ci --no-audit --no-fund --legacy-peer-deps
+COPY public ./public
+COPY src ./src
+# Served from the site root; no inline runtime script, so the CSP can forbid inline JS.
+ENV PUBLIC_URL=/ INLINE_RUNTIME_CHUNK=false GENERATE_SOURCEMAP=false CI=false
+RUN npm run build
+
+# --- 2. API dependencies -----------------------------------------------------
+FROM python:3.13-slim AS deps
+ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+COPY src/Backend/requirements.txt /tmp/requirements.txt
+RUN python -m venv /venv && /venv/bin/pip install -r /tmp/requirements.txt
+
+# --- 3. Runtime --------------------------------------------------------------
+FROM python:3.13-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/venv/bin:$PATH" PYTHONPATH=/app \
+    INDEX_CACHE_DIR=/tmp/index STATIC_DIR=/app/web PHOTO_URL_MODE=proxy PORT=8000 WEB_CONCURRENCY=1
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/* \
+ && groupadd --system app && useradd --system --gid app --home-dir /app --shell /usr/sbin/nologin app
+WORKDIR /app
+COPY --from=deps /venv /venv
+COPY --chown=app:app src/Backend/app ./app
+COPY --chown=app:app src/Backend/knowledge ./knowledge
+COPY --chown=app:app src/Backend/scripts ./scripts
+COPY --chown=app:app src/Backend/models ./models
+COPY --from=web --chown=app:app /web/build ./web
+USER app
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s \
+  CMD python -c "import os,urllib.request,sys; sys.exit(0 if urllib.request.urlopen(f'http://127.0.0.1:{os.environ[\"PORT\"]}/health').status==200 else 1)"
+# One worker: the free instance has 512 MB of memory.
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port \"$PORT\" --workers \"$WEB_CONCURRENCY\" --no-server-header --proxy-headers --forwarded-allow-ips='*'"]

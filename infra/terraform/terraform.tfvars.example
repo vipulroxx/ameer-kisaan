@@ -1,0 +1,9 @@
+# cp terraform.tfvars.example terraform.tfvars   (terraform.tfvars is git-ignored)
+region            = "ap-south-1"
+environment       = "prod"
+domain_name       = "app.example.in"
+certificate_arn   = "arn:aws:acm:ap-south-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+image_tag         = "replace-with-git-sha"
+llm_provider      = "openai"
+github_repository = "vipulroxx/ameer-kisaan"
+alarm_email       = "you@example.com"

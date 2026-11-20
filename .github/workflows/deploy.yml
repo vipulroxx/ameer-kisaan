@@ -1,0 +1,59 @@
+# Manual, auditable deploys. Uses GitHub OIDC to assume a short-lived AWS role
+# (created by infra/terraform when github_repository is set) - no AWS keys are
+# stored in GitHub. Set these repository variables (Settings > Variables):
+#   AWS_REGION            e.g. ap-south-1
+#   AWS_DEPLOY_ROLE_ARN   terraform output github_deploy_role_arn
+#   NAME_PREFIX           e.g. ameer-kisaan-prod  (ECR repos and ECS cluster use it)
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build and push images (tag = commit SHA; ECR tags are immutable)
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          PREFIX: ${{ vars.NAME_PREFIX }}
+          TAG: ${{ github.sha }}
+        run: |
+          docker build -t "$REGISTRY/$PREFIX-backend:$TAG" src/Backend
+          docker build -t "$REGISTRY/$PREFIX-frontend:$TAG" .
+          docker push "$REGISTRY/$PREFIX-backend:$TAG"
+          docker push "$REGISTRY/$PREFIX-frontend:$TAG"
+      - name: Roll out new task definitions
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          PREFIX: ${{ vars.NAME_PREFIX }}
+          TAG: ${{ github.sha }}
+        run: |
+          for svc in backend frontend; do
+            current=$(aws ecs describe-task-definition --task-definition "$PREFIX-$svc" --query taskDefinition)
+            next=$(echo "$current" | jq --arg img "$REGISTRY/$PREFIX-$svc:$TAG" '
+              .containerDefinitions[0].image = $img
+              | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
+            arn=$(aws ecs register-task-definition --cli-input-json "$next" --query taskDefinition.taskDefinitionArn --output text)
+            aws ecs update-service --cluster "$PREFIX" --service "$svc" --task-definition "$arn" > /dev/null
+          done
+          aws ecs wait services-stable --cluster "$PREFIX" --services backend frontend
