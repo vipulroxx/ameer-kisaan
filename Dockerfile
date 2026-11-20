@@ -14,6 +14,8 @@ RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:1.29-alpine
 USER root
+# Pick up OS security fixes released after the base image was published.
+RUN apk upgrade --no-cache
 # conf.d is generated at start-up from the template (BACKEND_UPSTREAM is filled in).
 RUN mkdir -p /etc/nginx/templates /etc/nginx/snippets && rm -f /etc/nginx/conf.d/default.conf && chown -R 101:0 /etc/nginx/conf.d && chmod 0775 /etc/nginx/conf.d
 COPY --chmod=0644 deploy/default.conf.template /etc/nginx/templates/default.conf.template
