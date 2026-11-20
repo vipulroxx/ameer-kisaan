@@ -1,0 +1,29 @@
+# Keeps the free hosting awake: Render's free web service sleeps after 15 minutes
+# without traffic (a slow first visit) and Supabase pauses a free project after a
+# week without database activity. /health/ready touches the database, so one
+# request every few minutes prevents both. GitHub Actions is free for public repos.
+# Set the repository variable PRODUCTION_URL (e.g. https://ameer-kisaan.onrender.com).
+name: Keep production awake
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    if: vars.PRODUCTION_URL != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping readiness endpoint
+        run: |
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "${{ vars.PRODUCTION_URL }}/health/ready" || true)
+            echo "attempt $i: HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 15
+          done
+          exit 1

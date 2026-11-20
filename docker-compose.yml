@@ -1,0 +1,94 @@
+# Ameer Kisaan - full local stack
+#
+#   cp .env.example .env   # then fill in the two secrets (see the comments in it)
+#   docker compose up --build
+#   open http://localhost:3000
+#
+# Local stand-ins for the AWS services used in production (infra/terraform):
+#   DynamoDB Local  -> Amazon DynamoDB
+#   S3Proxy         -> Amazon S3  (MinIO's community images are no longer published)
+#   Ollama          -> OpenAI / Azure OpenAI (LLM_PROVIDER)
+# Only the web app port (3000) and the S3 port used for photo links (9000) are
+# exposed, and only on 127.0.0.1. Nothing is reachable from your network.
+# Dev-tool images use :latest for convenience; pin digests if you need reproducible builds.
+
+name: ameer-kisaan
+
+services:
+  frontend:
+    build: .
+    ports: ["127.0.0.1:3000:8080"]
+    depends_on:
+      backend: { condition: service_healthy }
+    read_only: true
+    tmpfs: ["/tmp", "/etc/nginx/conf.d:uid=101,gid=101,mode=0755"]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+  backend:
+    build: ./src/Backend
+    env_file: .env
+    environment:
+      APP_ENV: local
+      COOKIE_SECURE: "false"          # plain http on localhost; true behind HTTPS in AWS
+      CORS_ORIGINS: http://localhost:3000
+      DYNAMODB_ENDPOINT_URL: http://dynamodb:8000
+      S3_ENDPOINT_URL: http://s3:80
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
+      S3_BUCKET: ameer-kisaan-uploads
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local-secret-key
+      AWS_REGION: ap-south-1
+      # Default: the ollama container. On a Mac, set OLLAMA_BASE_URL=http://host.docker.internal:11434
+      # in .env to use Ollama installed on the Mac itself (Apple GPU, much faster).
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      # Docker on macOS has no GPU access, so the LLM runs on CPU; answers can take ~1 min.
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-180}
+    volumes:
+      - ./src/Backend/models:/app/models:ro   # trained crop classifier, no rebuild needed
+    depends_on:
+      dynamodb: { condition: service_started }
+      s3: { condition: service_started }
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "/data"]
+    user: root   # the image's user cannot write to a fresh named volume
+    volumes: [dynamodb-data:/data]
+    restart: unless-stopped
+
+  s3:
+    image: andrewgaul/s3proxy:latest
+    environment:
+      S3PROXY_AUTHORIZATION: aws-v2-or-v4
+      S3PROXY_IDENTITY: local
+      S3PROXY_CREDENTIAL: local-secret-key
+      JCLOUDS_PROVIDER: filesystem
+      JCLOUDS_FILESYSTEM_BASEDIR: /data
+    ports: ["127.0.0.1:9000:80"]
+    volumes: [s3-data:/data]
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes: [ollama-models:/root/.ollama]
+    restart: unless-stopped
+
+  # One-off: downloads the chat + embedding models (~1.6 GB) the first time.
+  ollama-pull:
+    image: ollama/ollama:latest
+    environment: { OLLAMA_HOST: "ollama:11434" }
+    entrypoint: ["/bin/sh", "-c", "sleep 3 && ollama pull ${OLLAMA_MODEL:-llama3.2:1b} && ollama pull ${OLLAMA_EMBED_MODEL:-nomic-embed-text}"]
+    depends_on: [ollama]
+    restart: "no"
+
+volumes:
+  dynamodb-data:
+  s3-data:
+  ollama-models:

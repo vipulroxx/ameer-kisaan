@@ -18,7 +18,7 @@ with sync_playwright() as p:
         b = p.chromium.launch(headless=True)                      # needs `playwright install chromium`
     pg = b.new_page(viewport={"width": 1280, "height": 900})
     errs = []; pg.on("console", lambda m: m.type == "error" and errs.append(m.text))
-    pg.goto("http://localhost:3000"); pg.wait_for_selector("input[name=email]")
+    pg.goto("http://localhost:3000/login"); pg.wait_for_selector("input[name=email]")
     pg.screenshot(path=f"{OUT}/0-login.png")
     pg.locator("input[name=email]").fill("farmer@example.com")
     pg.locator("input[name=password]").fill("Str0ng-Passw0rd!x")

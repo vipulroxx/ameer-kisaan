@@ -1,0 +1,20 @@
+node_modules
+build
+.git
+.firebase
+# Backend: only local-only files are excluded (Dockerfile.render bundles the API)
+src/Backend/.venv*
+src/Backend/venv
+src/Backend/tests
+src/Backend/.pytest_cache
+src/Backend/.ruff_cache
+src/Backend/.git
+**/__pycache__
+**/*.pyc
+# training photos are not needed in the web image, except the tomato ones CropDetails.js imports
+src/Components/Agricultural-crops/*
+!src/Components/Agricultural-crops/tomato
+**/.DS_Store
+**/*.md
+# Kisaan AI answers from these guides
+!src/Backend/knowledge/*.md
