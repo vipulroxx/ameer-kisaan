@@ -14,7 +14,8 @@ permissions: {}
 
 jobs:
   ping:
-    if: vars.PRODUCTION_URL != ''
+    # Zero cost: only on a public repo (free minutes); a private repo would be metered.
+    if: ${{ vars.PRODUCTION_URL != '' && !github.event.repository.private }}
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:

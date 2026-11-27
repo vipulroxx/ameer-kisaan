@@ -38,3 +38,22 @@ locals {
   # Must match app/db/dynamo.py TABLES and the backend's TABLE_PREFIX
   table_prefix = "${local.name}-"
 }
+
+# --- Zero-cost guard -----------------------------------------------------------
+# Production runs free on Render + Supabase (see DEPLOY.md). This AWS stack is NOT free:
+# roughly $130-180/month (NAT gateway, load balancer, WAF, Fargate). It refuses to plan or
+# apply unless you explicitly accept AWS charges.
+variable "accept_aws_charges" {
+  description = "Set to true only if you agree to pay AWS for this stack (about $130-180/month)."
+  type        = bool
+  default     = false
+}
+
+resource "terraform_data" "zero_cost_guard" {
+  lifecycle {
+    precondition {
+      condition     = var.accept_aws_charges
+      error_message = "This AWS stack costs money (about $130-180/month). Ameer Kisaan runs free on Render + Supabase; see DEPLOY.md. Set accept_aws_charges = true only if you really intend to pay AWS."
+    }
+  }
+}
