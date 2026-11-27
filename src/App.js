@@ -4,7 +4,7 @@ import { Container, Box, Typography, AppBar, Toolbar, Tabs, Tab, CircularProgres
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme';
-import { FaCloudSun, FaLeaf, FaSeedling, FaBug, FaLandmark, FaWarehouse, FaComments, FaRobot } from 'react-icons/fa';
+import { FaCloudSun, FaLeaf, FaSeedling, FaBug, FaLandmark, FaWarehouse, FaComments, FaRobot, FaUserShield } from 'react-icons/fa';
 import CropRecommendation from './Components/dashboard/CropRecommendation';
 import CropSelection from './Components/dashboard/CropSelection';
 import NavigationBar from './Components/dashboard/NavigationBar';
@@ -20,6 +20,7 @@ import RiskClassification from './Components/risk_management/RiskClassification'
 import IssueReports from './Components/risk_management/IssueReports';
 import KisaanAssistant from './Components/collaboration/KisaanAssistant';
 import HomePage from './Components/landing/HomePage';
+import AdminPanel from './Components/admin/AdminPanel';
 import { authApi, onSessionChange } from './Components/services/api';
 import './App.css';
 
@@ -51,6 +52,10 @@ const TABS = [
   { key: 'inventory', label: 'Inventory', icon: <FaWarehouse className="icon" />, render: () => <InventoryManagement /> },
   { key: 'forum', label: 'Community Forum', icon: <FaComments className="icon" />, render: () => <Forum /> },
 ];
+
+// Only shown to admins; the API also refuses every admin call from anyone else.
+const ADMIN_TAB = { key: 'admin', label: 'Admin', icon: <FaUserShield className="icon" />, render: () => <AdminPanel /> };
+const tabsFor = (user) => (user && user.role === 'admin' ? [...TABS, ADMIN_TAB] : TABS);
 
 const PAGES = ['profile', 'settings'];
 
@@ -126,20 +131,21 @@ function Dashboard({ user }) {
   const navigate = useNavigate();
   const [hoveredTab, setHoveredTab] = useState(null);
 
-  const tabIndex = TABS.findIndex((t) => t.key === view);
+  const tabs = tabsFor(user);
+  const tabIndex = tabs.findIndex((t) => t.key === view);
   if (tabIndex === -1 && !PAGES.includes(view)) return <Navigate to="/app/weather" replace />;
-  const activeTab = TABS[tabIndex];
+  const activeTab = tabs[tabIndex];
 
   return (
     <Box>
       <Box display="flex" justifyContent="center" mb={3}>
         <Tabs
           value={tabIndex === -1 ? false : tabIndex}
-          onChange={(e, i) => navigate(`/app/${TABS[i].key}`)}
+          onChange={(e, i) => navigate(`/app/${tabs[i].key}`)}
           variant="scrollable"
           scrollButtons="auto"
         >
-          {TABS.map((t, i) => (
+          {tabs.map((t, i) => (
             <Tab
               key={t.key}
               label={<>{t.icon} {t.label}</>}

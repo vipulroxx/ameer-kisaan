@@ -6,7 +6,7 @@ services:
   - type: web
     name: ameer-kisaan
     runtime: docker
-    plan: free
+    plan: free                   # must stay free: see DEPLOY.md, "Zero-cost rules"
     region: singapore            # closest Render region to India
     dockerfilePath: ./Dockerfile.render
     dockerContext: .
